@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model ProductList {
+  productlist_id        Int      @id @default(autoincrement())
+  name                  String
+  productdetail         ProductDetails?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  transactions          Transaction[]
+}
+
+model ProductDetails {
+  productdetails_id   Int       @id @default(autoincrement())
+  product_id          Int       @unique
+  price               Float
+  image               String
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  inventory           Inventory?
+  product             ProductList @relation(fields: [product_id],references: [productlist_id])
+}
+
+model Transaction {
+  transaction_id    Int        @id @default(autoincrement())
+  date_time         DateTime   @default(now())
+  total_amount      Float
+  employee_id       Int
+  payment_method_id Int
+  discount          Discount[]
+  productlists      ProductList[]
+  payment_method    PaymentMethod  @relation(fields: [payment_method_id], references: [payment_method_id])
+  employee          Employee       @relation(fields: [employee_id], references: [employee_id])
+}
+
+model Employee {
+  employee_id   Int           @id @default(autoincrement())
+  name          String
+  position      String
+  username      String        @unique
+  password      String
+  email         String        @unique
+  image         String
+  address       String
+  date_of_birth String
+  handphone     String
+  created_at    DateTime      @default(now())
+  updated_at    DateTime?     @updatedAt
+  transactions  Transaction[]
+}
+
+model PaymentMethod {
+  payment_method_id Int        @id @default(autoincrement())
+  name              String
+  transactions      Transaction[]
+}
+
+model Discount {
+  discount_id     Int         @id @default(autoincrement())
+  name            String
+  description     String?
+  percentage      Float
+  discount_code   String      @unique
+  created_at      DateTime    @default(now())
+  updated_at      DateTime?    @updatedAt
+  transactions    Transaction[]
+}
+
+model Inventory {
+  inventory_id        Int      @id
+  quantity_in_stock   Int
+  created_at          DateTime  @default(now())
+  updated_at          DateTime?  @updatedAt
+  productdetails      ProductDetails  @relation(fields: [productdetails_id], references: [productdetails_id])
+  productdetails_id   Int @unique
+}
+
+model Cart {
+  id              Int       @id @default(autoincrement())
+  productlist_id  Int
+  quantity        Int
+  total           Float     @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime?  @updatedAt
+}
